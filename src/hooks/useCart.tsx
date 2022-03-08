@@ -39,16 +39,18 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const addProduct = async (productId: number) => {
     try {
       const { data: chosenProduct } = await api.get(`products/${productId}`);
+      
       if (!getCart().some(product => product.id === productId)) {
         setCart([...getCart(), { ...chosenProduct, amount: 1 }])
       } else {
+        const { data: stock } = await api.get(`stock`);
         let newCart = [...getCart()];
         let productIndex = cart.findIndex(product => product.id === productId);
-        if(chosenProduct.amount < newCart[productIndex].amount){
+        if (stock.find((product: { id: number; amount: number })=>product.id===productId).amount > newCart[productIndex].amount) {
           newCart[productIndex].amount += 1;
           setCart([...newCart])
         } else {
-          Quantidade 
+          toast.error('Quantidade solicitada fora de estoque');
         }
 
       }
@@ -82,10 +84,17 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
+      const { data: chosenProduct } = await api.get(`products/${productId}`);
       let newCart = [...getCart()];
       let productIndex = newCart.findIndex(product => product.id === productId);
-      newCart[productIndex].amount += amount;
-      setCart([...newCart])
+      const { data: stock } = await api.get(`stock`);
+      let newAmount = newCart[productIndex].amount+amount
+      if (stock.find((product: { id: number; amount: number })=>product.id===productId).amount >= newAmount) {
+        newCart[productIndex].amount += amount;
+        setCart([...newCart])
+      } else {
+        toast.error('Quantidade solicitada fora de estoque');
+      }
     } catch {
       toast.error('Erro na alteração de quantidade do produto');
     }
