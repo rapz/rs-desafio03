@@ -40,17 +40,20 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     try {
       const { data: chosenProduct } = await api.get(`products/${productId}`);
       if (!getCart().some(product => product.id === productId)) {
-        console.log('primeira vez do produto');
         setCart([...getCart(), { ...chosenProduct, amount: 1 }])
       } else {
-        console.log('adicionando amout no produtoi');
         let newCart = [...getCart()];
-        let productIndex = newCart.findIndex(product => product.id === productId);
-        newCart[productIndex].amount += 1;
-        setCart([...newCart])
+        let productIndex = cart.findIndex(product => product.id === productId);
+        if(chosenProduct.amount < newCart[productIndex].amount){
+          newCart[productIndex].amount += 1;
+          setCart([...newCart])
+        } else {
+          Quantidade 
+        }
+
       }
     } catch {
-      toast.error('Não consegui adicionar o item escolhido!')
+      toast.error('Erro na adição do produto');
     }
   };
 
@@ -70,7 +73,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       newCart.splice(productIndex, 1);
       setCart([...newCart])
     } catch {
-      toast.error('Não consegui remover o item!')
+      toast.error('Erro na remoção do produto');
     }
   };
 
@@ -84,7 +87,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       newCart[productIndex].amount += amount;
       setCart([...newCart])
     } catch {
-      toast.error('Não consegui alterar a quantidade do item!')
+      toast.error('Erro na alteração de quantidade do produto');
     }
   };
 
